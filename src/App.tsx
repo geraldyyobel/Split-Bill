@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  UploadCloud, 
-  Trash2, 
-  Plus, 
-  X, 
-  Sparkles, 
-  RefreshCw, 
-  Check, 
-  UserPlus, 
-  Users, 
-  FileText, 
-  TrendingUp, 
-  DollarSign, 
+import {
+  UploadCloud,
+  Trash2,
+  Plus,
+  X,
+  Sparkles,
+  RefreshCw,
+  Check,
+  UserPlus,
+  Users,
+  FileText,
+  TrendingUp,
+  DollarSign,
   AlertCircle,
   HelpCircle,
   ChevronDown,
@@ -29,16 +29,16 @@ import { Receipt, ReceiptItem, ChatMessage, SummaryOwed } from "./types";
 export default function App() {
   // Receipt data
   const [receipt, setReceipt] = useState<Receipt | null>(null);
-  
+
   // Participants
   const [participants, setParticipants] = useState<string[]>([]);
   const [newPersonName, setNewPersonName] = useState("");
-  
+
   // States of activities
   const [isParsing, setIsParsing] = useState(false);
   const [parsingError, setParsingError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  
+
   // Chat state
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -50,7 +50,7 @@ export default function App() {
   ]);
   const [chatInput, setChatInput] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
-  
+
   // Manual interactive features
   const [activeItemDropdownId, setActiveItemDropdownId] = useState<string | null>(null);
   const [showAddItemForm, setShowAddItemForm] = useState(false);
@@ -58,11 +58,11 @@ export default function App() {
   const [newItemPrice, setNewItemPrice] = useState("");
   const [newItemQty, setNewItemQty] = useState("1");
   const [expandedSummaryName, setExpandedSummaryName] = useState<string | null>(null);
-  
+
   // Export receipt modal & clipboard indicators
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  
+
   // Responsive navigation state for mobile/tablets
   const [activeMobileTab, setActiveMobileTab] = useState<"receipt" | "chat" | "splits">("receipt");
 
@@ -184,7 +184,7 @@ export default function App() {
       }
 
       const parsedJSON = await response.json();
-      
+
       const formattedItems: ReceiptItem[] = (parsedJSON.items || []).map((item: any, idx: number) => ({
         id: `item-${Date.now()}-${idx}`,
         name: item.name || "Unnamed Item",
@@ -385,7 +385,7 @@ export default function App() {
     const updatedItems = receipt.items.map(item => {
       if (item.id === itemId) {
         const contains = item.assignedTo.includes(name);
-        const nextAssigned = contains 
+        const nextAssigned = contains
           ? item.assignedTo.filter(p => p !== name)
           : [...item.assignedTo, name];
         return {
@@ -402,7 +402,7 @@ export default function App() {
   const handleAddNewItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!receipt || !newItemName.trim() || !newItemPrice) return;
-    
+
     const priceNum = parseFloat(newItemPrice);
     const qtyNum = parseInt(newItemQty) || 1;
     if (isNaN(priceNum)) return;
@@ -453,12 +453,12 @@ export default function App() {
   const updateReceiptTotals = (field: "tax" | "tip" | "subtotal", val: string) => {
     if (!receipt) return;
     const floatVal = parseFloat(val) || 0;
-    
+
     let updated = { ...receipt };
     if (field === "tax") updated.tax = floatVal;
     if (field === "tip") updated.tip = floatVal;
     if (field === "subtotal") updated.subtotal = floatVal;
-    
+
     updated.total = updated.subtotal + updated.tax + updated.tip;
     setReceipt(updated);
   };
@@ -517,7 +517,7 @@ export default function App() {
   };
 
   const splitsBreakdown = calculateSplits();
-  
+
   // Quick quickstart chips
   const quickSuggestions = [
     { label: "Everyone share the beer 🍺", command: "everyone shared the beer" },
@@ -559,11 +559,11 @@ export default function App() {
       // UTF-8 safe base64 encoding
       const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
       const shareUrl = `${window.location.origin}${window.location.pathname}?split=${encodeURIComponent(base64Str)}`;
-      
+
       navigator.clipboard.writeText(shareUrl);
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
-      
+
       // Update system chat with link
       setChatMessages(prev => [
         ...prev,
@@ -583,26 +583,26 @@ export default function App() {
   const oklchToRgb = (oklchStr: string): string => {
     const match = oklchStr.match(/oklch\(([^)]+)\)/i);
     if (!match) return "rgb(120, 120, 120)";
-    
+
     const partsStr = match[1].trim();
     const [colorPart, alphaPart] = partsStr.split("/");
     const values = colorPart.trim().replace(/,/g, " ").split(/\s+/).filter(Boolean);
     if (values.length < 3) return "rgb(120, 120, 120)";
-    
+
     const lStr = values[0];
     const cStr = values[1];
     const hStr = values[2];
-    
+
     let l = lStr.endsWith("%") ? parseFloat(lStr) / 100 : parseFloat(lStr);
     let c = cStr.endsWith("%") ? parseFloat(cStr) / 100 : parseFloat(cStr);
     let h = parseFloat(hStr.replace(/deg/gi, ""));
-    
+
     if (isNaN(l)) l = 0.5;
     if (isNaN(c)) c = 0.1;
     if (isNaN(h)) h = 0;
-    
+
     let r = 120, g = 120, b = 120;
-    
+
     if (c < 0.04) {
       const gray = Math.round(l * 255);
       r = gray; g = gray; b = gray;
@@ -635,11 +635,11 @@ export default function App() {
         b = Math.round(68 * (l / 0.5));
       }
     }
-    
+
     r = Math.max(0, Math.min(255, r));
     g = Math.max(0, Math.min(255, g));
     b = Math.max(0, Math.min(255, b));
-    
+
     if (alphaPart) {
       let alpha = alphaPart.trim();
       if (alpha.endsWith("%")) {
@@ -653,19 +653,19 @@ export default function App() {
   const oklabToRgb = (oklabStr: string): string => {
     const match = oklabStr.match(/oklab\(([^)]+)\)/i);
     if (!match) return "rgb(120, 120, 120)";
-    
+
     const partsStr = match[1].trim();
     const [colorPart, alphaPart] = partsStr.split("/");
     const values = colorPart.trim().replace(/,/g, " ").split(/\s+/).filter(Boolean);
     if (values.length === 0) return "rgb(120, 120, 120)";
-    
+
     const lStr = values[0];
     let l = lStr.endsWith("%") ? parseFloat(lStr) / 100 : parseFloat(lStr);
-    
+
     if (isNaN(l)) l = 0.5;
-    
+
     const gray = Math.max(0, Math.min(255, Math.round(l * 255)));
-    
+
     if (alphaPart) {
       let alpha = alphaPart.trim();
       if (alpha.endsWith("%")) {
@@ -709,7 +709,7 @@ export default function App() {
       try {
         if (sheet.cssRules) {
           originalCSSRulesMap.set(sheet, sheet.cssRules);
-          
+
           const mockRules: CSSRule[] = [];
           for (let j = 0; j < sheet.cssRules.length; j++) {
             const rule = sheet.cssRules[j];
@@ -717,7 +717,7 @@ export default function App() {
             if (rule.cssText && (rule.cssText.includes("oklch") || rule.cssText.includes("oklab"))) {
               modifiedText = convertCSSOklchAndOklab(rule.cssText);
             }
-            
+
             const mockRule = new Proxy(rule, {
               get(target, prop) {
                 if (prop === "cssText") {
@@ -732,7 +732,7 @@ export default function App() {
             });
             mockRules.push(mockRule);
           }
-          
+
           Object.defineProperty(sheet, "cssRules", {
             get: () => mockRules,
             configurable: true
@@ -745,7 +745,7 @@ export default function App() {
 
     // 2. Monkey patch local window CSSStyleDeclaration prototype
     try {
-      CSSStyleDeclaration.prototype.getPropertyValue = function(property: string) {
+      CSSStyleDeclaration.prototype.getPropertyValue = function (property: string) {
         const val = originalGetPropertyValue.call(this, property);
         if (typeof val === "string" && (val.includes("oklch") || val.includes("oklab"))) {
           return convertCSSOklchAndOklab(val);
@@ -776,12 +776,12 @@ export default function App() {
 
     // 3. Monkey patch local window getComputedStyle
     try {
-      window.getComputedStyle = function(elt, pseudoElt) {
+      window.getComputedStyle = function (elt, pseudoElt) {
         const style = originalGetComputedStyle(elt, pseudoElt);
         return new Proxy(style, {
           get(target, prop) {
             if (prop === "getPropertyValue") {
-              return function(propertyName: string) {
+              return function (propertyName: string) {
                 const val = target.getPropertyValue(propertyName);
                 if (typeof val === "string" && (val.includes("oklch") || val.includes("oklab"))) {
                   return convertCSSOklchAndOklab(val);
@@ -827,7 +827,7 @@ export default function App() {
             // Override prototype of CSSStyleDeclaration in iframe context
             const proto = clonedWin.CSSStyleDeclaration.prototype;
             const originalIframeGetPropertyValue = proto.getPropertyValue;
-            proto.getPropertyValue = function(property: string) {
+            proto.getPropertyValue = function (property: string) {
               const val = originalIframeGetPropertyValue.call(this, property);
               if (typeof val === "string" && (val.includes("oklch") || val.includes("oklab"))) {
                 return convertCSSOklchAndOklab(val);
@@ -859,12 +859,12 @@ export default function App() {
 
           try {
             const originalIframeComputedStyle = clonedWin.getComputedStyle;
-            clonedWin.getComputedStyle = function(elt, pseudoElt) {
+            clonedWin.getComputedStyle = function (elt, pseudoElt) {
               const style = originalIframeComputedStyle(elt, pseudoElt);
               return new Proxy(style, {
                 get(target, prop) {
                   if (prop === "getPropertyValue") {
-                    return function(propertyName: string) {
+                    return function (propertyName: string) {
                       const val = target.getPropertyValue(propertyName);
                       if (typeof val === "string" && (val.includes("oklch") || val.includes("oklab"))) {
                         return convertCSSOklchAndOklab(val);
@@ -987,13 +987,13 @@ export default function App() {
         backgroundColor: "#fcfbfa",
       });
       const imgData = canvas.toDataURL("image/png");
-      
+
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      
+
       const imgWidth = pdfWidth - 20; // 10mm margins on sides
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
+
       pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
       pdf.save(`${receipt?.storeName || "receipt"}-split-bill.pdf`);
     } catch (err) {
@@ -1003,7 +1003,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#fafbfc] flex flex-col font-sans text-slate-800">
-      
+
       {/* App Header (SplitSmart AI) */}
       <header className="h-16 flex items-center justify-between px-4 sm:px-6 bg-white border-b border-slate-200 sticky top-0 z-40 shrink-0 select-none">
         <div className="flex items-center gap-2.5 sm:gap-3">
@@ -1029,7 +1029,7 @@ export default function App() {
           )}
           <span className="hidden md:inline text-slate-400">{new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span>
           {receipt && (
-            <button 
+            <button
               onClick={resetAll}
               className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-[10px] sm:text-[11px] bg-white text-slate-550 hover:bg-slate-50 hover:text-slate-800 transition-all font-medium cursor-pointer"
             >
@@ -1046,22 +1046,20 @@ export default function App() {
           <div className="bg-slate-100 p-0.5 rounded-xl flex items-center justify-between text-xs font-bold text-slate-500 shadow-3xs">
             <button
               onClick={() => setActiveMobileTab("receipt")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all ${
-                activeMobileTab === "receipt"
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all ${activeMobileTab === "receipt"
                   ? "bg-white text-indigo-600 shadow-xs"
                   : "hover:text-slate-800 hover:bg-white/40"
-              }`}
+                }`}
             >
               <FileText className="w-3.5 h-3.5 shrink-0" />
               <span>Receipt</span>
             </button>
             <button
               onClick={() => setActiveMobileTab("chat")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all relative ${
-                activeMobileTab === "chat"
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all relative ${activeMobileTab === "chat"
                   ? "bg-white text-indigo-600 shadow-xs"
                   : "hover:text-slate-800 hover:bg-white/40"
-              }`}
+                }`}
             >
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
               <span>AI Chat</span>
@@ -1073,11 +1071,10 @@ export default function App() {
             </button>
             <button
               onClick={() => setActiveMobileTab("splits")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all ${
-                activeMobileTab === "splits"
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all ${activeMobileTab === "splits"
                   ? "bg-white text-indigo-600 shadow-xs"
                   : "hover:text-slate-800 hover:bg-white/40"
-              }`}
+                }`}
             >
               <Users className="w-3.5 h-3.5 shrink-0" />
               <span>Owed</span>
@@ -1088,10 +1085,10 @@ export default function App() {
 
       {/* Main container splitscreen */}
       <main className="max-w-7xl w-full mx-auto p-4 sm:p-5 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:overflow-hidden">
-        
+
         {/* Left column: Receipt viewer & Upload Panel (5 cols) */}
         <div className={`lg:col-span-5 flex flex-col space-y-4 ${activeMobileTab === "receipt" ? "flex" : "hidden lg:flex"}`}>
-          
+
           {!receipt ? (
             /* Uploader layout when nothing is parsed yet */
             <div className="flex flex-col flex-1 bg-white border border-slate-200 rounded-2xl p-6 justify-between min-h-[500px] shadow-xs">
@@ -1104,7 +1101,7 @@ export default function App() {
                     Upload or Parse Receipt
                   </h2>
                   <p className="text-slate-500 text-xs mt-1 leading-relaxed">
-                    Choose an image of your receipt to let Gemini extract names, prices, tax, and totals automatically.
+                    Choose an image of your receipt to let Split Smart extract names, prices, tax, and totals automatically.
                   </p>
                 </div>
 
@@ -1114,11 +1111,10 @@ export default function App() {
                   onDragOver={handleDrag}
                   onDragLeave={handleDrag}
                   onDrop={handleDrop}
-                  className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
-                    dragActive 
-                      ? "border-indigo-500 bg-indigo-50/40" 
+                  className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${dragActive
+                      ? "border-indigo-500 bg-indigo-50/40"
                       : "border-slate-200 hover:border-indigo-400 hover:bg-slate-50/20"
-                  }`}
+                    }`}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <input
@@ -1136,7 +1132,7 @@ export default function App() {
                         <Sparkles className="w-4 h-4 text-indigo-500 absolute -top-1 -right-1 animate-pulse" />
                       </div>
                       <p className="text-slate-800 text-xs font-semibold mt-4 animate-pulse font-display">
-                        Gemini AI mapping receipt lines...
+                        Split Smart AI mapping receipt lines...
                       </p>
                       <p className="text-slate-400 text-[10px] mt-1">
                         Extracting items, subtotal, and tax
@@ -1154,7 +1150,7 @@ export default function App() {
                         or click to browse local files
                       </p>
                       <span className="mt-4 inline-block text-[9px] bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider">
-                        Power of Gemini 3.5 Flash
+
                       </span>
                     </div>
                   )}
@@ -1201,9 +1197,9 @@ export default function App() {
               </div>
             </div>
           ) : (
-             /* Structured receipt detail editor pane */
+            /* Structured receipt detail editor pane */
             <div className="flex flex-col flex-1 bg-white border border-slate-200 rounded-2xl overflow-hidden h-[calc(100vh-12rem)] md:h-[calc(100vh-10rem)] lg:h-full lg:max-h-[calc(100vh-8.5rem)] shadow-xs animate-fade-in">
-              
+
               {/* Receipt Header details */}
               <div className="pt-6 px-6 pb-4 border-b border-slate-200 bg-slate-50/50">
                 <div className="flex items-center justify-between">
@@ -1315,11 +1311,10 @@ export default function App() {
                     return (
                       <div
                         key={item.id}
-                        className={`relative border rounded-xl p-3 transition-all ${
-                          isAssigned
+                        className={`relative border rounded-xl p-3 transition-all ${isAssigned
                             ? "bg-white border-slate-200"
                             : "bg-amber-50/20 border-amber-200/50"
-                        }`}
+                          }`}
                       >
                         {/* Item main row details */}
                         <div className="flex items-start justify-between">
@@ -1341,26 +1336,26 @@ export default function App() {
                                 className="text-xs font-semibold text-slate-700 bg-transparent border-none rounded-sm px-0.5 hover:bg-slate-100/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-400 w-full cursor-pointer"
                               />
                             </div>
-                            
+
                             {/* Visual assigned users with flat tags */}
                             <div className="mt-2 flex flex-wrap gap-1 items-center">
                               {item.assignedTo.map((name) => (
-                                  <span
-                                    key={name}
-                                    className={`text-[9px] font-semibold border rounded-full px-2 py-0.5 flex items-center space-x-1 ${getParticipantColor(name)}`}
+                                <span
+                                  key={name}
+                                  className={`text-[9px] font-semibold border rounded-full px-2 py-0.5 flex items-center space-x-1 ${getParticipantColor(name)}`}
+                                >
+                                  <span>{name}</span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleItemAssignee(item.id, name);
+                                    }}
+                                    className="hover:bg-slate-900/15 rounded-full p-0.5 text-current"
                                   >
-                                    <span>{name}</span>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleItemAssignee(item.id, name);
-                                      }}
-                                      className="hover:bg-slate-900/15 rounded-full p-0.5 text-current"
-                                    >
-                                      <X className="w-2 h-2 text-current" />
-                                    </button>
-                                  </span>
-                                ))}
+                                    <X className="w-2 h-2 text-current" />
+                                  </button>
+                                </span>
+                              ))}
 
                               {/* Split button triggers checkbox overlay drop down */}
                               <div className="relative inline-block">
@@ -1374,15 +1369,15 @@ export default function App() {
 
                                 {activeItemDropdownId === item.id && (
                                   <>
-                                    <div 
-                                      className="fixed inset-0 z-10" 
+                                    <div
+                                      className="fixed inset-0 z-10"
                                       onClick={() => setActiveItemDropdownId(null)}
                                     />
                                     <div className="absolute left-0 mt-1 z-20 bg-white border border-slate-200 rounded-xl shadow-lg p-2 min-w-44 space-y-1 text-[11px] max-h-48 overflow-y-auto">
                                       <p className="px-2 py-1 text-slate-400 font-bold uppercase text-[8px] tracking-wider border-b border-slate-100">
                                         Toggle assignee
                                       </p>
-                                      
+
                                       {participants.length === 0 ? (
                                         <p className="px-2 py-2 text-slate-400 italic text-[10px]">
                                           Add participants listed on sidebar to check them.
@@ -1432,7 +1427,7 @@ export default function App() {
                                 className="text-xs font-mono font-bold text-slate-700 bg-transparent border-none rounded-sm text-right px-0.5 hover:bg-slate-100/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-400 w-16 cursor-pointer"
                               />
                             </div>
-                            
+
                             <button
                               onClick={() => handleRemoveItem(item.id)}
                               className="mt-2.5 text-slate-300 hover:text-rose-500 transition-colors p-1 rounded-sm cursor-pointer"
@@ -1564,7 +1559,7 @@ export default function App() {
 
         {/* Right column: Smart Chat interface & Real-time Split Breakdown (7 cols) */}
         <div className={`lg:col-span-7 flex flex-col space-y-4 lg:overflow-hidden h-full lg:max-h-[calc(100vh-8.5rem)] ${activeMobileTab !== "receipt" ? "flex" : "hidden lg:flex"} animate-fade-in`}>
-          
+
           {/* Upper Sub-pane: Chat interface card */}
           <div className={`bg-white border border-slate-200 rounded-2xl flex flex-col overflow-hidden h-[calc(100vh-12rem)] md:h-[calc(100vh-10rem)] lg:h-[350px] xl:h-[48%] shrink-0 shadow-xs ${activeMobileTab === "chat" ? "flex" : "hidden lg:flex"}`}>
             {/* Header chat status */}
@@ -1575,10 +1570,10 @@ export default function App() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-slate-800 font-display">Smart Splitting Chat</h3>
-                  <p className="text-[10px] text-slate-400 font-mono">Gemini AI Assistant</p>
+                  <p className="text-[10px] text-slate-400 font-mono">Split Smart AI Assistant</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-1.5 text-[10px] font-semibold">
                 {receipt && getUnassignedCount() > 0 ? (
                   <span className="bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200/50">
@@ -1604,22 +1599,21 @@ export default function App() {
                     className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl p-3 px-4 text-xs leading-relaxed shadow-3xs ${
-                        isUser
+                      className={`max-w-[80%] rounded-2xl p-3 px-4 text-xs leading-relaxed shadow-3xs ${isUser
                           ? "bg-slate-800 text-white rounded-tr-none text-sm"
                           : msg.sender === "system"
-                          ? "bg-slate-50 border border-slate-200 text-slate-600 font-medium"
-                          : msg.isError
-                          ? "bg-rose-50 border border-rose-100 text-rose-700 font-medium"
-                          : "bg-indigo-50/40 border border-indigo-100 text-indigo-950 rounded-tl-none text-sm"
-                      }`}
+                            ? "bg-slate-50 border border-slate-200 text-slate-600 font-medium"
+                            : msg.isError
+                              ? "bg-rose-50 border border-rose-100 text-rose-700 font-medium"
+                              : "bg-indigo-50/40 border border-indigo-100 text-indigo-950 rounded-tl-none text-sm"
+                        }`}
                     >
                       {/* Message content */}
                       <div className="whitespace-pre-line text-[13px]">
                         {isUser ? (
                           <span className="text-white block font-medium">{msg.text}</span>
                         ) : (
-                          <div dangerouslySetInnerHTML={{ 
+                          <div dangerouslySetInnerHTML={{
                             __html: msg.text
                               .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>')
                               .replace(/`([^`]+)`/g, '<code class="bg-indigo-50 text-indigo-700 rounded px-1 font-mono text-[11px] font-bold">$1</code>')
@@ -1658,7 +1652,7 @@ export default function App() {
                       <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce delay-200"></div>
                     </div>
                     <span className="text-[10px] text-slate-500 font-medium animate-pulse">
-                      Gemini is interpreting splitting command...
+                      Split Smart is interpreting splitting command...
                     </span>
                   </div>
                 </div>
@@ -1689,8 +1683,8 @@ export default function App() {
                   type="text"
                   disabled={!receipt || isChatLoading}
                   placeholder={
-                    !receipt 
-                      ? "🔒 Load or upload a receipt first to chat" 
+                    !receipt
+                      ? "🔒 Load or upload a receipt first to chat"
                       : "Type natural command (e.g. 'frank split fries with sarah')"
                   }
                   value={chatInput}
@@ -1700,7 +1694,7 @@ export default function App() {
                   }}
                   className="flex-1 text-sm bg-transparent border-none focus:ring-0 px-3 text-slate-700 outline-none disabled:opacity-50"
                 />
-                
+
                 <button
                   type="button"
                   disabled={!receipt || !chatInput.trim() || isChatLoading}
@@ -1771,7 +1765,7 @@ export default function App() {
                               ${owed.totalOwed.toFixed(2)}
                             </span>
                           </div>
-                          
+
                           <div className="text-slate-400">
                             {isExpanded ? (
                               <ChevronUp className="w-4 h-4 text-slate-400" />
@@ -1792,13 +1786,13 @@ export default function App() {
                             className="bg-slate-50 border-t border-slate-150 overflow-hidden"
                           >
                             <div className="p-4 space-y-3 text-[11px]">
-                              
+
                               {/* Assigned items list */}
                               <div>
                                 <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">
                                   Items breakdown
                                 </p>
-                                
+
                                 {owed.items.length === 0 ? (
                                   <p className="text-slate-400 italic text-[10px] bg-white p-2.5 rounded-lg border border-slate-200">
                                     No items assigned yet.
@@ -1912,9 +1906,9 @@ export default function App() {
 
             {/* Modal Scroll Content */}
             <div className="p-5 flex-1 overflow-y-auto flex flex-col items-center gap-6">
-              
+
               {/* Thermal Paper Ticket Representation */}
-              <div 
+              <div
                 id="exportable-receipt-ticket"
                 className="w-full bg-[#fcfbfa] border border-amber-100/50 rounded-xs shadow-md p-5 font-mono text-xs text-slate-800 relative max-w-[340px] leading-relaxed"
                 style={{
@@ -1940,7 +1934,7 @@ export default function App() {
 
                 {/* Core Items summary directory */}
                 <div className="space-y-4">
-                  
+
                   {/* Share item groups for each participant */}
                   {splitsBreakdown.map((owed) => (
                     <div key={owed.name} className="space-y-1 bg-white p-2 text-[11px] rounded border border-slate-200/50 shadow-3xs">
@@ -1948,7 +1942,7 @@ export default function App() {
                         <span>{owed.name}</span>
                         <span>${owed.totalOwed.toFixed(2)}</span>
                       </div>
-                      
+
                       {owed.items.length === 0 ? (
                         <p className="text-slate-400 italic text-[9px] p-1 text-center">No items assigned</p>
                       ) : (
@@ -1961,7 +1955,7 @@ export default function App() {
                           ))}
                         </div>
                       )}
-                      
+
                       {/* Subtotal, tax and tip share detailed lines */}
                       <div className="border-t border-dashed border-slate-150 pt-1 mt-1 text-[9px] text-slate-500 flex flex-col space-y-0.5">
                         <div className="flex justify-between">
@@ -1979,7 +1973,7 @@ export default function App() {
                       </div>
                     </div>
                   ))}
-                  
+
                 </div>
 
                 {/* Overall grand totals */}
@@ -2026,7 +2020,7 @@ export default function App() {
                 <Link className="w-4 h-4 text-indigo-500 mb-1" />
                 <span className="text-[10px] font-bold">{copiedLink ? "Copied!" : "Copy Link"}</span>
               </button>
-              
+
               <button
                 type="button"
                 onClick={handleExportAsImage}
