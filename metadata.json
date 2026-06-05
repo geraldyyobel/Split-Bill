@@ -1,0 +1,6 @@
+{
+  "name": "Receipt Bill Splitter",
+  "description": "Split bills easily by uploading a receipt and assigning items using natural language chat commands.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
