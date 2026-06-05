@@ -8,29 +8,40 @@ const app = express();
 
 app.use(express.json({ limit: "50mb" }));
 
-// Initialize Google GenAI SDK (only if API key is present, otherwise we handle it in the request)
-const apiKey = process.env.GEMINI_API_KEY;
-const ai = new GoogleGenAI({
-  apiKey: apiKey || "dummy-key-to-prevent-constructor-crash",
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
+// Lazy initializer for Google GenAI SDK to prevent startup crashes if API key is missing or invalid
+let ai: GoogleGenAI | null = null;
+
+function getAiClient(): GoogleGenAI {
+  if (!ai) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not configured on the server. Please add it to your Environment Variables.");
     }
+    ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
   }
-});
+  return ai;
+}
 
 // Endpoint to parse receipt from image (base64)
 app.post("/api/parse-receipt", async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ 
-        error: "GEMINI_API_KEY is not configured on the server. Please add it to your Environment Variables." 
-      });
-    }
-
     const { image } = req.body;
     if (!image) {
       return res.status(400).json({ error: "No receipt image provided." });
+    }
+
+    let client;
+    try {
+      client = getAiClient();
+    } catch (e: any) {
+      return res.status(500).json({ error: e.message });
     }
 
     let base64Clean = image;
@@ -54,7 +65,7 @@ app.post("/api/parse-receipt", async (req, res) => {
 3. Subtotal, Tax, Tip, and overall Total listed.
 All monetary amounts must be numbers, not strings with currency symbols. If tax, tip, or subtotal are not found group items to approximate or set them to 0. Make sure things add up reasonably close.`;
 
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model: "gemini-3.5-flash",
       contents: [
         imagePart,
@@ -103,16 +114,17 @@ All monetary amounts must be numbers, not strings with currency symbols. If tax,
 // Endpoint to process chat text commands
 app.post("/api/chat-command", async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ 
-        error: "GEMINI_API_KEY is not configured on the server. Please add it to your Environment Variables." 
-      });
-    }
-
     const { query, items, participants, history } = req.body;
 
     if (!query) {
       return res.status(400).json({ error: "Command query is required." });
+    }
+
+    let client;
+    try {
+      client = getAiClient();
+    } catch (e: any) {
+      return res.status(500).json({ error: e.message });
     }
 
     const promptText = `You are a smart bill splitter assistant.
@@ -136,7 +148,7 @@ Instructions:
 
 Return the result strictly as a JSON object adhering to the schema.`;
 
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model: "gemini-3.5-flash",
       contents: [{ text: promptText }],
       config: {
