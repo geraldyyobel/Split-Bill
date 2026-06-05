@@ -64,7 +64,7 @@ Instructions:
 Return the result strictly as a JSON object adhering to the schema.`;
 
     const response = await client.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       contents: [{ text: promptText }],
       config: {
         responseMimeType: "application/json",
