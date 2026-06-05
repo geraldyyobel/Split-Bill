@@ -194,4 +194,9 @@ async function start() {
   });
 }
 
-start();
+// Only start the server locally, not when imported as a module by Vercel
+if (process.env.VERCEL !== "1") {
+  start();
+}
+
+export default app;
